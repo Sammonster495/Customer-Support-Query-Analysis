@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Summarizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Set a fixed size for the chart */
+        #sentimentChart {
+            width: 400px;  /* Set the width */
+            height: 400px; /* Set the height */
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">Customer Support Ticket Summarizer</h1>
+
+    <form method="POST" class="grid">
+        <label for="query">Enter your customer query:</label><br>
+        <textarea id="query" name="query" rows="10" cols="80" class="justify-self-center"></textarea><br><br>
+        <button type="submit" class="text-lg rounded-lg justify-self-center">Process Query</button>
+    </form>
+
+    {% if result %}
+        <h2>Results:</h2>
+        <p><strong>Original Query:</strong> {{ result.original_query }}</p>
+        <p><strong>Sentiment:</strong> {{ result.label }}</p>
+        <p><strong>Summary:</strong> {{ result.summary }}</p>
+        <p><strong>Keywords:</strong> {{ result.keywords | join(", ") }}</p>
+
+        <!-- Sentiment Pie Chart -->
+        <canvas id="sentimentChart"></canvas>
+
+        <script>
+            // Get sentiment label and confidence from the backend
+            const sentimentLabel = "{{ result.label }}";  // Make sure it's a string
+            
+            // Determine the chart data based on sentiment
+            let positiveConfidence = {{result.sentiment_confidences['Positive']}};
+            let negativeConfidence = {{result.sentiment_confidences['Negative']}};
+            let neutralConfidence = {{result.sentiment_confidences['Neutral']}};
+            console.log(positiveConfidence, negativeConfidence, neutralConfidence);
+
+            // Prepare chart data
+            const sentimentData = {
+                labels: ['Positive', 'Negative', 'Neutral'],
+                datasets: [{
+                    data: [positiveConfidence, negativeConfidence, neutralConfidence],
+                    backgroundColor: ['#28a745', '#dc3545', '#ffc107'],
+                    hoverBackgroundColor: ['#218838', '#c82333', '#e0a800']
+                }]
+            };
+
+            // Get the canvas element
+            const canvas = document.getElementById('sentimentChart');
+            // Ensure fixed size for the canvas
+            canvas.width = 400;
+            canvas.height = 400;
+
+            // Create the chart
+            const ctx = canvas.getContext('2d');
+            const sentimentChart = new Chart(ctx, {
+                type: 'pie',
+                data: sentimentData,
+                options: {
+                    responsive: false,  // Disable responsiveness
+                    maintainAspectRatio: false,  // Optional: Ensure fixed aspect ratio
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    {% endif %}
+</body>
+</html>
+
+<!-- The product arrived quickly, and the packaging was great, which I really appreciated. The first few uses were good, but after a week, I started noticing some issues. The app that comes with the product is a bit glitchy and often crashes. The customer service response was quick, but the solution offered didn't completely resolve my issue. Overall, it’s a decent product, but the issues make it less than perfect. -->
+
+<!-- I ordered a pair of headphones last week, and while the sound quality is decent, the product arrived with a faulty charging case. I tried reaching out to your support team, but I haven't heard back in days. I'm frustrated because I had high expectations for this brand, but now I'm left with a broken product and no help from customer service. I still like the sound, but the overall experience has been disappointing and a waste of time. -->
+
+<!-- I am extremely disappointed with the service. The product I received was damaged and I can't get a response from customer support. -->
